@@ -88,33 +88,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
   }
 
   private getDefaultErrorCode(statusCode: number): string {
-    switch (statusCode) {
-      case HttpStatus.BAD_REQUEST:
-        return 'BAD_REQUEST';
-
-      case HttpStatus.UNAUTHORIZED:
-        return 'UNAUTHORIZED';
-
-      case HttpStatus.FORBIDDEN:
-        return 'FORBIDDEN';
-
-      case HttpStatus.NOT_FOUND:
-        return 'NOT_FOUND';
-
-      case HttpStatus.CONFLICT:
-        return 'CONFLICT';
-
-      case HttpStatus.UNPROCESSABLE_ENTITY:
-        return 'VALIDATION_FAILED';
-
-      case HttpStatus.TOO_MANY_REQUESTS:
-        return 'TOO_MANY_REQUESTS';
-
-      case HttpStatus.INTERNAL_SERVER_ERROR:
-        return 'INTERNAL_SERVER_ERROR';
-
-      default:
-        return statusCode >= 500 ? 'INTERNAL_SERVER_ERROR' : 'HTTP_ERROR';
-    }
+    const errorCodes: Record<number, string> = {
+      [HttpStatus.BAD_REQUEST]: 'BAD_REQUEST',
+      [HttpStatus.UNAUTHORIZED]: 'UNAUTHORIZED',
+      [HttpStatus.FORBIDDEN]: 'FORBIDDEN',
+      [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
+      [HttpStatus.CONFLICT]: 'CONFLICT',
+      [HttpStatus.UNPROCESSABLE_ENTITY]: 'VALIDATION_FAILED',
+      [HttpStatus.TOO_MANY_REQUESTS]: 'TOO_MANY_REQUESTS',
+      [HttpStatus.INTERNAL_SERVER_ERROR]: 'INTERNAL_SERVER_ERROR',
+    };
+    return errorCodes[statusCode] ?? (statusCode >= 500 ? 'INTERNAL_SERVER_ERROR' : 'HTTP_ERROR');
   }
 }

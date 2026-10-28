@@ -15,10 +15,10 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, ApiSuccessResp
 
     return next.handle().pipe(
       map((data) => ({
-        success: true as const,
+        success: true,
         statusCode: response.statusCode,
         message: 'Request successful',
-        data: data as T,
+        data: data,
         timestamp: new Date().toISOString(),
         path: request.originalUrl ?? request.url,
       })),
