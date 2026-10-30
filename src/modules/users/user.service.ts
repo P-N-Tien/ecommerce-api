@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { RegisterDto } from '../auth/dto/auth.dto';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -20,6 +21,7 @@ export class UsersService {
       if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
         throw new EmailAlreadyExistsException('Email already exists');
       }
+      this.logger.error('Failed to register user', error instanceof Error ? error.stack : undefined);
       throw new InternalServerErrorException('Internal server error');
     }
   }
