@@ -11,7 +11,7 @@ export class User {
   @Column({ select: false, nullable: false, length: 100 })
   password!: string;
 
-  @Column({ default: true, nullable: false })
+  @Column({ default: true })
   isActive!: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
