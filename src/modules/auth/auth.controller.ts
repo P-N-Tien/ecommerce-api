@@ -20,6 +20,6 @@ export class AuthController {
   @ApiConflictResponse({ description: 'User registered successfully' })
   @ApiInternalServerErrorResponse({ description: 'User registered successfully' })
   async register(@Body() dto: RegisterDto): Promise<void> {
-    this.authService.register(dto);
+    await this.authService.register(dto);
   }
 }

@@ -8,8 +8,8 @@ export class PasswordService {
   async hashPassword(password: string): Promise<string> {
     try {
       const salt = await bcrypt.genSalt(this.SALT_ROUNDS);
-      return bcrypt.hash(password, salt);
-    } catch (error: unknown) {
+      return await bcrypt.hash(password, salt);
+    } catch {
       throw new InternalServerErrorException('Unable to process password');
     }
   }

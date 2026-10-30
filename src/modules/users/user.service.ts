@@ -16,8 +16,8 @@ export class UsersService {
     try {
       const newUser = this.userRepository.create({ email: dto.email, password: dto.password });
       await this.userRepository.save(newUser);
-    } catch (error: any) {
-      if (error?.code === '23505') {
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
         throw new EmailAlreadyExistsException('Email already exists');
       }
       throw new InternalServerErrorException('Internal server error');
