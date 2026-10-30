@@ -1,9 +1,9 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
-
+import { Test } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/user.service';
-import { RegisterDto } from './dto/auth.dto';
+import type { RegisterDto } from './dto/auth.dto';
 import { EmailAlreadyExistsException } from './exception/email-already-exists.exception';
 import { PasswordService } from './service/password.service';
 
