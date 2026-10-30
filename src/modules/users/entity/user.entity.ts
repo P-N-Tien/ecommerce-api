@@ -3,20 +3,20 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true, nullable: false, length: 255 })
-  email: string;
+  email!: string;
 
   @Column({ select: false, nullable: false, length: 100 })
-  password: string;
+  password!: string;
 
-  @Column({ default: true, nullable: false })
-  isActive: boolean;
+  @Column({ default: true })
+  isActive!: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
