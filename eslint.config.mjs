@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config([
   {
-    ignores: ['eslint.config.mjs', 'dist/**', 'node_modules/**'],
+    ignores: ['eslint.config.mjs', 'dist/**', 'node_modules/**', 'src/database/migrations/**'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -19,9 +19,7 @@ export default tseslint.config([
       },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ['src/database/migrations/*.ts', 'scripts/*.ts'],
-        },
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
