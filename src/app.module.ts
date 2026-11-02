@@ -24,6 +24,7 @@ import databaseConfig from './config/database.config';
         database: configService.get<string>('database.database'),
         autoLoadEntities: true,
         synchronize: false,
+        ssl: configService.get<string>('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
       }),
     }),
     AuthModule,
