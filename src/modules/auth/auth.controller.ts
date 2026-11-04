@@ -82,7 +82,6 @@ export class AuthController {
       this.configService.get<string>(ENV_KEYS.JWT_REFRESH_COOKIE_NAME) || COOKIE_DEFAULTS.REFRESH_NAME;
     const accessCookieName =
       this.configService.get<string>(ENV_KEYS.JWT_ACCESS_COOKIE_NAME) || COOKIE_DEFAULTS.ACCESS_NAME;
-
     const cookies = (request.cookies ?? {}) as Record<string, string | undefined>;
     const oldRefreshToken = cookies[refreshCookieName];
 
