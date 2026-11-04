@@ -23,11 +23,17 @@ export class AuthService {
     const sanitizedEmail = sanitizeEmail(dto.email);
 
     const user = await this.userService.findByEmail(sanitizedEmail);
-    if (!user) throw new UnauthorizedException('Invalid credentials');
-    if (!user.isActive) throw new ForbiddenException('User account is inactive');
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    if (!user.isActive) {
+      throw new ForbiddenException('User account is inactive');
+    }
 
     const isPasswordValid = await this.passwordService.comparePassword(dto.password, user.password);
-    if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     const payload = { sub: user.id, email: user.email };
     const { accessToken, refreshToken } = await this.tokenService.generateAuthTokens(payload);

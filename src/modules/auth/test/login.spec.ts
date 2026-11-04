@@ -1,20 +1,22 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Test } from '@nestjs/testing';
+import type { TestingModule } from '@nestjs/testing';
+import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
+
 import { AuthService } from '../auth.service';
-import { UsersService } from 'src/modules/users/user.service';
+import { UsersService } from '../../users/user.service';
 import { PasswordService } from '../service/password.service';
 import { TokenService } from '../service/token.service';
 
 describe('AuthService', () => {
   let authService: AuthService;
+  let moduleRef: TestingModule;
 
   let userService: {
-    register: ReturnType<typeof vi.fn>;
     findByEmail: ReturnType<typeof vi.fn>;
   };
 
   let passwordService: {
-    hashPassword: ReturnType<typeof vi.fn>;
     comparePassword: ReturnType<typeof vi.fn>;
   };
 
@@ -34,16 +36,17 @@ describe('AuthService', () => {
     refreshToken: 'mock-refresh-token',
   };
 
-  beforeEach(() => {
-    vi.resetAllMocks();
+  const loginDto = {
+    email: 'test@example.com',
+    password: 'PlainPassword123!',
+  };
 
+  beforeEach(async () => {
     userService = {
-      register: vi.fn(),
       findByEmail: vi.fn(),
     };
 
     passwordService = {
-      hashPassword: vi.fn(),
       comparePassword: vi.fn(),
     };
 
@@ -51,28 +54,36 @@ describe('AuthService', () => {
       generateAuthTokens: vi.fn(),
     };
 
-    authService = new AuthService(
-      userService as unknown as UsersService,
-      passwordService as unknown as PasswordService,
-      tokenService as unknown as TokenService,
-    );
+    moduleRef = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        {
+          provide: UsersService,
+          useValue: userService,
+        },
+        {
+          provide: PasswordService,
+          useValue: passwordService,
+        },
+        {
+          provide: TokenService,
+          useValue: tokenService,
+        },
+      ],
+    }).compile();
+
+    authService = moduleRef.get<AuthService>(AuthService);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     vi.clearAllMocks();
+    await moduleRef.close();
   });
 
   describe('login', () => {
-    const loginDto = {
-      email: 'test@example.com',
-      password: 'PlainPassword123!',
-    };
-
     it('should login successfully and return auth tokens', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
-
       passwordService.comparePassword.mockResolvedValue(true);
-
       tokenService.generateAuthTokens.mockResolvedValue(mockTokens);
 
       const result = await authService.login(loginDto);
@@ -115,7 +126,6 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException if password is incorrect', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
-
       passwordService.comparePassword.mockResolvedValue(false);
 
       await expect(authService.login(loginDto)).rejects.toThrow(UnauthorizedException);
@@ -125,7 +135,6 @@ describe('AuthService', () => {
 
     it('should not generate tokens if password comparison fails unexpectedly', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
-
       passwordService.comparePassword.mockRejectedValue(new Error('Password comparison failed'));
 
       await expect(authService.login(loginDto)).rejects.toThrow('Password comparison failed');
@@ -144,9 +153,7 @@ describe('AuthService', () => {
 
     it('should propagate error if token generation fails', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
-
       passwordService.comparePassword.mockResolvedValue(true);
-
       tokenService.generateAuthTokens.mockRejectedValue(new Error('Token generation failed'));
 
       await expect(authService.login(loginDto)).rejects.toThrow('Token generation failed');

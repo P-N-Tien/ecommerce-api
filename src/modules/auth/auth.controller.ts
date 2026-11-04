@@ -36,7 +36,7 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Invalid credentials provided.' })
   @ApiForbiddenResponse({ description: 'User account is inactive.' })
   @ApiInternalServerErrorResponse({ description: 'An internal server error occurred.' })
-  async login(@Body() dto: LoginDto): Promise<LoginResponseDto> {
-    return await this.authService.login(dto);
+  login(@Body() dto: LoginDto): Promise<LoginResponseDto> {
+    return this.authService.login(dto);
   }
 }
