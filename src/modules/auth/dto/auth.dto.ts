@@ -23,3 +23,9 @@ export class RegisterDto {
   @MaxLength(20, { message: 'Password cannot exceed 20 characters' })
   password!: string;
 }
+
+export class LoginDto extends RegisterDto {}
+export class LoginResponseDto {
+  accessToken!: string;
+  refreshToken!: string;
+}

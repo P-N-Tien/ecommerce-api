@@ -1,11 +1,12 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { Test } from '@nestjs/testing';
 import type { TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
-import { UsersService } from '../users/user.service';
-import type { RegisterDto } from './dto/auth.dto';
-import { EmailAlreadyExistsException } from './exception/email-already-exists.exception';
-import { PasswordService } from './service/password.service';
+import { AuthService } from '../auth.service';
+import { UsersService } from '../../users/user.service';
+import type { RegisterDto } from '../dto/auth.dto';
+import { EmailAlreadyExistsException } from '../exception/email-already-exists.exception';
+import { PasswordService } from '../service/password.service';
+import { TokenService } from '../service/token.service';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -16,6 +17,10 @@ describe('AuthService', () => {
 
   let passwordService: {
     hashPassword: ReturnType<typeof vi.fn>;
+  };
+
+  let tokenService: {
+    generateAuthTokens: ReturnType<typeof vi.fn>;
   };
 
   const mockRegisterDto: RegisterDto = {
@@ -34,6 +39,10 @@ describe('AuthService', () => {
       hashPassword: vi.fn(),
     };
 
+    tokenService = {
+      generateAuthTokens: vi.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -44,6 +53,10 @@ describe('AuthService', () => {
         {
           provide: PasswordService,
           useValue: passwordService,
+        },
+        {
+          provide: TokenService,
+          useValue: tokenService,
         },
       ],
     }).compile();
