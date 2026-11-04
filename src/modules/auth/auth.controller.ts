@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -26,6 +26,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user account' })
   @ApiCreatedResponse({ description: 'User registered successfully.' })
   @ApiBadRequestResponse({ description: 'Invalid input data provided.' })
@@ -37,6 +38,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User login authentication' })
   @ApiOkResponse({ description: 'Successfully authenticated and logged in.' })
   @ApiBadRequestResponse({ description: 'Invalid login payload format.' })
@@ -70,6 +72,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token using refresh token in cookie' })
   @ApiOkResponse({ description: 'Successfully refreshed tokens.' })
   @ApiUnauthorizedResponse({ description: 'Invalid or expired refresh token.' })
@@ -112,5 +115,21 @@ export class AuthController {
 
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'User logout and clear session cookies' })
+  @ApiOkResponse({ description: 'Successfully logged out and cookies cleared.' })
+  async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
+    const refreshCookieName =
+      this.configService.get<string>(ENV_KEYS.JWT_REFRESH_COOKIE_NAME) || COOKIE_DEFAULTS.REFRESH_NAME;
+    const accessCookieName =
+      this.configService.get<string>(ENV_KEYS.JWT_ACCESS_COOKIE_NAME) || COOKIE_DEFAULTS.ACCESS_NAME;
+
+    const clearOptions = clearCookieOptions(this.configService);
+
+    response.clearCookie(accessCookieName, clearOptions);
+    response.clearCookie(refreshCookieName, clearOptions);
   }
 }
