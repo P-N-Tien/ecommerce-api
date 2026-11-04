@@ -21,8 +21,8 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<LoginResponseDto> {
     const sanitizedEmail = sanitizeEmail(dto.email);
-    const user = await this.userService.findByEmail(sanitizedEmail);
 
+    const user = await this.userService.findByEmail(sanitizedEmail);
     if (!user) throw new UnauthorizedException('Invalid credentials');
     if (!user.isActive) throw new ForbiddenException('User account is inactive');
 
