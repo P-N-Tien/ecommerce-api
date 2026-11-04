@@ -40,4 +40,38 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+
+  async refreshTokens(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+    try {
+      const isRefreshToken = true;
+      const payload = await this.tokenService.verifyToken(refreshToken, isRefreshToken);
+
+      if (!payload || !payload.sub) {
+        throw new UnauthorizedException('Invalid refresh token structure');
+      }
+
+      const user = await this.userService.findOneById(payload.sub);
+
+      if (!user) {
+        throw new UnauthorizedException('User no longer exists');
+      }
+
+      if (!user.isActive) {
+        throw new ForbiddenException('User account is inactive');
+      }
+
+      const tokenPayload = { sub: user.id, email: user.email };
+      const [newAccessToken, newRefreshToken] = await Promise.all([
+        this.tokenService.generateAccessToken(tokenPayload),
+        this.tokenService.generateRefreshToken(tokenPayload),
+      ]);
+
+      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+  }
 }
