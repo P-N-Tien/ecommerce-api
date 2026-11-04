@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -112,5 +112,21 @@ export class AuthController {
 
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'User logout and clear session cookies' })
+  @ApiOkResponse({ description: 'Successfully logged out and cookies cleared.' })
+  async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
+    const refreshCookieName =
+      this.configService.get<string>(ENV_KEYS.JWT_REFRESH_COOKIE_NAME) || COOKIE_DEFAULTS.REFRESH_NAME;
+    const accessCookieName =
+      this.configService.get<string>(ENV_KEYS.JWT_ACCESS_COOKIE_NAME) || COOKIE_DEFAULTS.ACCESS_NAME;
+
+    const clearOptions = clearCookieOptions(this.configService);
+
+    response.clearCookie(accessCookieName, clearOptions);
+    response.clearCookie(refreshCookieName, clearOptions);
   }
 }
