@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength } from 'class-validator';
+import e from 'express';
 
 export class RegisterDto {
   @ApiProperty({
@@ -23,3 +24,5 @@ export class RegisterDto {
   @MaxLength(20, { message: 'Password cannot exceed 20 characters' })
   password!: string;
 }
+
+export class LoginDto extends RegisterDto {}
