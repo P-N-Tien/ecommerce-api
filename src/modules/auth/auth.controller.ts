@@ -80,7 +80,8 @@ export class AuthController {
     const accessCookieName =
       this.configService.get<string>(ENV_KEYS.JWT_ACCESS_COOKIE_NAME) || COOKIE_DEFAULTS.ACCESS_NAME;
 
-    const oldRefreshToken = request.cookies[refreshCookieName];
+    const cookies = (request.cookies ?? {}) as Record<string, string | undefined>;
+    const oldRefreshToken = cookies[refreshCookieName];
 
     if (!oldRefreshToken) {
       throw new UnauthorizedException('Refresh token missing');
@@ -104,7 +105,7 @@ export class AuthController {
         ...baseCookieOptions,
         maxAge: refreshMaxAge,
       });
-    } catch (error) {
+    } catch {
       const clearOptions = clearCookieOptions(this.configService);
       response.clearCookie(accessCookieName, clearOptions);
       response.clearCookie(refreshCookieName, clearOptions);

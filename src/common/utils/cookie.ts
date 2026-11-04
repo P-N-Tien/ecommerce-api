@@ -1,5 +1,5 @@
-import { ConfigService } from '@nestjs/config';
-import { CookieOptions } from 'express';
+import type { ConfigService } from '@nestjs/config';
+import type { CookieOptions } from 'express';
 import { ENV_KEYS } from './constants';
 
 export const getCookieOptions = (configService: ConfigService): CookieOptions => {
