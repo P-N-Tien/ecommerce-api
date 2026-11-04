@@ -26,3 +26,7 @@ export class RegisterDto {
 }
 
 export class LoginDto extends RegisterDto {}
+export class LoginResponseDto {
+  accessToken!: string;
+  refreshToken!: string;
+}
