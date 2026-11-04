@@ -26,6 +26,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user account' })
   @ApiCreatedResponse({ description: 'User registered successfully.' })
   @ApiBadRequestResponse({ description: 'Invalid input data provided.' })
@@ -37,6 +38,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User login authentication' })
   @ApiOkResponse({ description: 'Successfully authenticated and logged in.' })
   @ApiBadRequestResponse({ description: 'Invalid login payload format.' })
@@ -70,6 +72,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token using refresh token in cookie' })
   @ApiOkResponse({ description: 'Successfully refreshed tokens.' })
   @ApiUnauthorizedResponse({ description: 'Invalid or expired refresh token.' })
