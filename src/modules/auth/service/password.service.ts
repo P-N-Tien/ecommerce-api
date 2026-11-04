@@ -10,7 +10,7 @@ export class PasswordService {
       const salt = await bcrypt.genSalt(this.SALT_ROUNDS);
       return await bcrypt.hash(password, salt);
     } catch {
-      throw new InternalServerErrorException('Unable to process password');
+      throw new InternalServerErrorException('Internal server error');
     }
   }
 

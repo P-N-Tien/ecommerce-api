@@ -25,4 +25,8 @@ export class UsersService {
       throw new InternalServerErrorException('Internal server error');
     }
   }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { email } });
+  }
 }

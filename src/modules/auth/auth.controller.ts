@@ -3,11 +3,14 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { RegisterDto } from './dto/auth.dto';
+import { LoginDto, LoginResponseDto, RegisterDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 
 @ApiTags('Authentication')
@@ -24,5 +27,16 @@ export class AuthController {
   async register(@Body() dto: RegisterDto): Promise<{ message: string }> {
     await this.authService.register(dto);
     return { message: 'User registered successfully.' };
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: 'User login authentication' })
+  @ApiOkResponse({ description: 'Successfully authenticated and logged in.' })
+  @ApiBadRequestResponse({ description: 'Invalid login payload format.' })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials provided.' })
+  @ApiForbiddenResponse({ description: 'User account is inactive.' })
+  @ApiInternalServerErrorResponse({ description: 'An internal server error occurred.' })
+  login(@Body() dto: LoginDto): Promise<LoginResponseDto> {
+    return this.authService.login(dto);
   }
 }
