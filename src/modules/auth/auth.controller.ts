@@ -16,6 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import { Response, Request } from 'express';
 import { clearCookieOptions, getCookieOptions } from 'src/common/utils/cookie';
 import { COOKIE_DEFAULTS, ENV_KEYS } from 'src/common/utils/constants';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -26,6 +27,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user account' })
   @ApiCreatedResponse({ description: 'User registered successfully.' })
@@ -38,6 +40,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User login authentication' })
   @ApiOkResponse({ description: 'Successfully authenticated and logged in.' })
