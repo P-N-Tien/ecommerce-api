@@ -120,7 +120,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User logout and clear session cookies' })
   @ApiOkResponse({ description: 'Successfully logged out and cookies cleared.' })
-  async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
+  logout(@Res({ passthrough: true }) response: Response): void {
     const refreshCookieName =
       this.configService.get<string>(ENV_KEYS.JWT_REFRESH_COOKIE_NAME) || COOKIE_DEFAULTS.REFRESH_NAME;
     const accessCookieName =
