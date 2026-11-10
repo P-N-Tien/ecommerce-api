@@ -1,9 +1,9 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto, LoginResponseDto, RegisterDto } from './dto/auth.dto';
-import { PasswordService } from './service/password.service';
-import { UsersService } from '../users/user.service';
-import { sanitizeEmail } from 'src/common/utils/email.util';
-import { TokenService } from './service/token.service';
+import { sanitizeEmail } from '@/common/utils/email.util';
+import { TokenService } from '@/modules/auth/service/token.service';
+import { UsersService } from '@/modules/users/user.service';
+import { PasswordService } from '@/modules/auth/service/password.service';
 
 @Injectable()
 export class AuthService {

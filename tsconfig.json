@@ -14,7 +14,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "paths": {
-      "src/*": ["./src/*"],
+      "@/*": ["./src/*"],
       "test/*": ["./test/*"]
     },
     "incremental": true,
