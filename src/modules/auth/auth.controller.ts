@@ -14,9 +14,9 @@ import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 import { Response, Request } from 'express';
-import { clearCookieOptions, getCookieOptions } from 'src/common/utils/cookie';
-import { COOKIE_DEFAULTS, ENV_KEYS } from 'src/common/utils/constants';
-import { Public } from 'src/common/decorators/public.decorator';
+import { clearCookieOptions, getCookieOptions } from '@/common/utils/cookie';
+import { COOKIE_DEFAULTS, ENV_KEYS } from '@/common/utils/constants';
+import { Public } from '@/common/decorators/public.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')

@@ -2,9 +2,9 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
-import { IS_PUBLIC_KEY } from 'src/common/decorators/public.decorator';
+import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
 import { COOKIE_DEFAULTS, ENV_KEYS } from '../utils/constants';
-import { TokenService } from 'src/modules/auth/service/token.service';
+import { TokenService } from '@/modules/auth/service/token.service';
 
 interface IUserPayload {
   sub: string;
