@@ -19,7 +19,7 @@ import { COOKIE_DEFAULTS, ENV_KEYS } from '@/common/utils/constants';
 import { Public } from '@/common/decorators/public.decorator';
 
 @ApiTags('Authentication')
-@Controller('auth')
+@Controller('api/v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
