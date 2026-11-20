@@ -1,9 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
-import { COOKIE_DEFAULTS, ENV_KEYS } from '../utils/constants';
 import { TokenService } from '@/modules/auth/service/token.service';
 
 interface IUserPayload {
@@ -14,7 +12,6 @@ interface IUserPayload {
 }
 
 interface RequestWithUser extends Request {
-  cookies: Record<string, string | undefined>;
   user?: IUserPayload;
 }
 
@@ -22,7 +19,6 @@ interface RequestWithUser extends Request {
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly tokenService: TokenService,
-    private readonly configService: ConfigService,
     private readonly reflector: Reflector,
   ) {}
 
@@ -38,13 +34,11 @@ export class AuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<RequestWithUser>();
 
-    const accessCookieName =
-      this.configService.get<string>(ENV_KEYS.JWT_ACCESS_COOKIE_NAME) ?? COOKIE_DEFAULTS.ACCESS_NAME;
+    const authorization = request.headers.authorization;
+    const [scheme, token] = authorization?.split(' ', 2) ?? [];
 
-    const token = request.cookies[accessCookieName];
-
-    if (!token) {
-      throw new UnauthorizedException('Access token missing from cookies');
+    if (scheme?.toLowerCase() !== 'bearer' || !token) {
+      throw new UnauthorizedException('Access token missing from Authorization header');
     }
 
     try {

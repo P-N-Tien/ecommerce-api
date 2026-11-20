@@ -48,21 +48,9 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Invalid credentials provided.' })
   @ApiForbiddenResponse({ description: 'User account is inactive.' })
   @ApiInternalServerErrorResponse({ description: 'An internal server error occurred.' })
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response): Promise<void> {
+  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.authService.login(dto);
-
     const baseCookieOptions = getCookieOptions(this.configService);
-
-    const accessCookieName =
-      this.configService.get<string>(ENV_KEYS.JWT_ACCESS_COOKIE_NAME) || COOKIE_DEFAULTS.ACCESS_NAME;
-    const accessMaxAge =
-      Number(this.configService.get<number>(ENV_KEYS.JWT_ACCESS_MAX_AGE_MS)) || COOKIE_DEFAULTS.ACCESS_MAX_AGE;
-
-    response.cookie(accessCookieName, accessToken, {
-      ...baseCookieOptions,
-      maxAge: accessMaxAge,
-    });
-
     const refreshCookieName =
       this.configService.get<string>(ENV_KEYS.JWT_REFRESH_COOKIE_NAME) || COOKIE_DEFAULTS.REFRESH_NAME;
     const refreshMaxAge =
@@ -72,19 +60,23 @@ export class AuthController {
       ...baseCookieOptions,
       maxAge: refreshMaxAge,
     });
+
+    return { accessToken };
   }
 
   @Post('refresh')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token using refresh token in cookie' })
   @ApiOkResponse({ description: 'Successfully refreshed tokens.' })
   @ApiUnauthorizedResponse({ description: 'Invalid or expired refresh token.' })
   @ApiInternalServerErrorResponse({ description: 'An internal server error occurred.' })
-  async refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response): Promise<void> {
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ accessToken: string }> {
     const refreshCookieName =
       this.configService.get<string>(ENV_KEYS.JWT_REFRESH_COOKIE_NAME) || COOKIE_DEFAULTS.REFRESH_NAME;
-    const accessCookieName =
-      this.configService.get<string>(ENV_KEYS.JWT_ACCESS_COOKIE_NAME) || COOKIE_DEFAULTS.ACCESS_NAME;
     const cookies = (request.cookies ?? {}) as Record<string, string | undefined>;
     const oldRefreshToken = cookies[refreshCookieName];
 
@@ -94,15 +86,7 @@ export class AuthController {
 
     try {
       const { accessToken, refreshToken: newRefreshToken } = await this.authService.refreshTokens(oldRefreshToken);
-
       const baseCookieOptions = getCookieOptions(this.configService);
-
-      const accessMaxAge =
-        Number(this.configService.get<number>(ENV_KEYS.JWT_ACCESS_MAX_AGE_MS)) || COOKIE_DEFAULTS.ACCESS_MAX_AGE;
-      response.cookie(accessCookieName, accessToken, {
-        ...baseCookieOptions,
-        maxAge: accessMaxAge,
-      });
 
       const refreshMaxAge =
         Number(this.configService.get<number>(ENV_KEYS.JWT_REFRESH_MAX_AGE_MS)) || COOKIE_DEFAULTS.REFRESH_MAX_AGE;
@@ -110,9 +94,10 @@ export class AuthController {
         ...baseCookieOptions,
         maxAge: refreshMaxAge,
       });
+
+      return { accessToken };
     } catch {
       const clearOptions = clearCookieOptions(this.configService);
-      response.clearCookie(accessCookieName, clearOptions);
       response.clearCookie(refreshCookieName, clearOptions);
 
       throw new UnauthorizedException('Invalid or expired refresh token');
@@ -126,12 +111,8 @@ export class AuthController {
   logout(@Res({ passthrough: true }) response: Response): void {
     const refreshCookieName =
       this.configService.get<string>(ENV_KEYS.JWT_REFRESH_COOKIE_NAME) || COOKIE_DEFAULTS.REFRESH_NAME;
-    const accessCookieName =
-      this.configService.get<string>(ENV_KEYS.JWT_ACCESS_COOKIE_NAME) || COOKIE_DEFAULTS.ACCESS_NAME;
-
     const clearOptions = clearCookieOptions(this.configService);
 
-    response.clearCookie(accessCookieName, clearOptions);
     response.clearCookie(refreshCookieName, clearOptions);
   }
 }
