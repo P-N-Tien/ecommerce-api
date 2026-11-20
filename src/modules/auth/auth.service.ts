@@ -35,7 +35,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, roles: [] };
     const { accessToken, refreshToken } = await this.tokenService.generateAuthTokens(payload);
 
     return { accessToken, refreshToken };

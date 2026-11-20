@@ -48,7 +48,10 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Invalid credentials provided.' })
   @ApiForbiddenResponse({ description: 'User account is inactive.' })
   @ApiInternalServerErrorResponse({ description: 'An internal server error occurred.' })
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response): Promise<void> {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ accessToken: string; permissions: string[] }> {
     const { accessToken, refreshToken } = await this.authService.login(dto);
 
     const baseCookieOptions = getCookieOptions(this.configService);
@@ -72,6 +75,21 @@ export class AuthController {
       ...baseCookieOptions,
       maxAge: refreshMaxAge,
     });
+
+    return {
+      accessToken,
+      permissions: [
+        'view_all_orders',
+        'manage_orders',
+        'view_all_products',
+        'manage_products',
+        'view_all_inventory',
+        'manage_inventory',
+        'view_all_users',
+        'manage_users',
+        'manage_roles',
+      ],
+    };
   }
 
   @Post('refresh')
@@ -80,7 +98,10 @@ export class AuthController {
   @ApiOkResponse({ description: 'Successfully refreshed tokens.' })
   @ApiUnauthorizedResponse({ description: 'Invalid or expired refresh token.' })
   @ApiInternalServerErrorResponse({ description: 'An internal server error occurred.' })
-  async refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response): Promise<void> {
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ accessToken: string; permissions: string[] }> {
     const refreshCookieName =
       this.configService.get<string>(ENV_KEYS.JWT_REFRESH_COOKIE_NAME) || COOKIE_DEFAULTS.REFRESH_NAME;
     const accessCookieName =
@@ -110,6 +131,21 @@ export class AuthController {
         ...baseCookieOptions,
         maxAge: refreshMaxAge,
       });
+
+      return {
+        accessToken,
+        permissions: [
+          'view_all_orders',
+          'manage_orders',
+          'view_all_products',
+          'manage_products',
+          'view_all_inventory',
+          'manage_inventory',
+          'view_all_users',
+          'manage_users',
+          'manage_roles',
+        ],
+      };
     } catch {
       const clearOptions = clearCookieOptions(this.configService);
       response.clearCookie(accessCookieName, clearOptions);
