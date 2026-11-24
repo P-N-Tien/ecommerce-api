@@ -19,7 +19,7 @@ export class UsersService {
       await this.userRepository.save(newUser);
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
-        throw new EmailAlreadyExistsException('Email already exists');
+        throw new EmailAlreadyExistsException();
       }
       this.logger.error('Failed to register user', error instanceof Error ? error.stack : undefined);
       throw new InternalServerErrorException('Internal server error');
@@ -32,5 +32,9 @@ export class UsersService {
 
   async findOneById(id: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { id } });
+  }
+
+  async updatePassword(id: string, passwordHash: string): Promise<void> {
+    await this.userRepository.update(id, { password: passwordHash });
   }
 }

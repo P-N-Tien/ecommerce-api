@@ -10,16 +10,17 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { ChangePasswordDto, LoginDto, RegisterDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 import { Response, Request } from 'express';
 import { clearCookieOptions, getCookieOptions } from '@/common/utils/cookie';
 import { COOKIE_DEFAULTS, ENV_KEYS } from '@/common/utils/constants';
 import { Public } from '@/common/decorators/public.decorator';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @ApiTags('Authentication')
-@Controller('api/v1/auth')
+@Controller('/api/v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -76,6 +77,7 @@ export class AuthController {
         'view_all_users',
         'manage_users',
         'manage_roles',
+        'access_admin',
       ],
     };
   }
@@ -123,6 +125,7 @@ export class AuthController {
           'view_all_users',
           'manage_users',
           'manage_roles',
+          'access_admin',
         ],
       };
     } catch {
@@ -131,6 +134,20 @@ export class AuthController {
 
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change the current user password' })
+  @ApiOkResponse({ description: 'Password changed successfully.' })
+  @ApiBadRequestResponse({ description: 'Current password is incorrect or password confirmation does not match.' })
+  @ApiUnauthorizedResponse({ description: 'Authentication is required.' })
+  async changePassword(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.authService.changePassword(userId, dto);
+    return { message: 'Password changed successfully.' };
   }
 
   @Post('logout')

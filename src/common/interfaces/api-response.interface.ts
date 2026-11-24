@@ -8,16 +8,23 @@ export interface ApiSuccessResponse<T> {
 }
 
 export interface ApiErrorDetail {
+  field?: string;
   code: string;
   message: string;
-  details?: unknown;
+}
+
+export interface ApiErrorPayload {
+  errorCode: string;
+  message: string;
+  errors: ApiErrorDetail[];
 }
 
 export interface ApiErrorResponse {
   success: false;
   statusCode: number;
+  errorCode: string;
   message: string;
-  error: ApiErrorDetail;
+  errors: ApiErrorDetail[];
   timestamp: string;
   path: string;
 }

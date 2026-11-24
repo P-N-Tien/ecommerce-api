@@ -10,6 +10,7 @@ import { UsersModule } from './modules/users/user.module';
 import { TokenService } from './modules/auth/service/token.service';
 import { PasswordService } from './modules/auth/service/password.service';
 import { JwtService } from '@nestjs/jwt';
+import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { JwtService } from '@nestjs/jwt';
     }),
     AuthModule,
     UsersModule,
+    CategoryModule,
   ],
   providers: [
     AuthService,

@@ -1,8 +1,9 @@
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { createValidationErrorPayload } from './common/errors/api-error';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
@@ -10,9 +11,8 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
   const allowedOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
+    ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim().replace(/\/$/, ''))
     : ['http://localhost:3200'];
-
   const allowedMethods = process.env.CORS_METHODS || 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS';
 
   app.enableCors({
@@ -28,6 +28,7 @@ async function bootstrap(): Promise<void> {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      exceptionFactory: (validationErrors) => new BadRequestException(createValidationErrorPayload(validationErrors)),
     }),
   );
 

@@ -8,6 +8,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
+import { CategoryStatus } from '../category-status.enum';
 
 @Entity('categories')
 export class Category {
@@ -23,17 +24,17 @@ export class Category {
   @Column({ type: 'text', nullable: true })
   description!: string | null;
 
-  @Column({ type: 'uuid', nullable: true })
-  parent_id!: string | null;
+  @Column({ name: 'parent_id', type: 'uuid', nullable: true })
+  parentId!: string | null;
 
-  @Column({ nullable: false, type: 'boolean', default: true })
-  is_active!: boolean;
+  @Column({ type: 'enum', enum: CategoryStatus, default: CategoryStatus.ACTIVE })
+  status!: CategoryStatus;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  created_at!: Date;
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updated_at!: Date;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  updatedAt!: Date;
 
   @ManyToOne(() => Category, (category) => category.children, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'parent_id' })
