@@ -11,6 +11,7 @@ export const getCookieOptions = (configService: ConfigService): CookieOptions =>
     httpOnly: true,
     secure: secureEnv ? secureEnv === 'true' : isProduction,
     sameSite: sameSiteConfig as 'lax' | 'strict' | 'none',
+    path: '/api/v1/auth/refresh',
   };
 };
 
@@ -23,5 +24,6 @@ export const clearCookieOptions = (configService: ConfigService): CookieOptions 
     httpOnly: true,
     secure: secureEnv ? secureEnv === 'true' : isProduction,
     sameSite: sameSiteConfig as 'lax' | 'strict' | 'none',
+    path: '/api/v1/auth/refresh',
   };
 };

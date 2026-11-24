@@ -1,9 +1,16 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { LoginDto, LoginResponseDto, RegisterDto } from './dto/auth.dto';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ChangePasswordDto, LoginDto, LoginResponseDto, RegisterDto } from './dto/auth.dto';
 import { sanitizeEmail } from '@/common/utils/email.util';
 import { TokenService } from '@/modules/auth/service/token.service';
 import { UsersService } from '@/modules/users/user.service';
 import { PasswordService } from '@/modules/auth/service/password.service';
+import { API_ERROR_CODES, createApiErrorPayload, createFieldError } from '@/common/errors/api-error';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +42,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, roles: [] };
     const { accessToken, refreshToken } = await this.tokenService.generateAuthTokens(payload);
 
     return { accessToken, refreshToken };
@@ -60,7 +67,7 @@ export class AuthService {
         throw new ForbiddenException('User account is inactive');
       }
 
-      const tokenPayload = { sub: user.id, email: user.email };
+      const tokenPayload = { sub: user.id, email: user.email, roles: [] };
       const [newAccessToken, newRefreshToken] = await Promise.all([
         this.tokenService.generateAccessToken(tokenPayload),
         this.tokenService.generateRefreshToken(tokenPayload),
@@ -73,5 +80,44 @@ export class AuthService {
       }
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.userService.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isCurrentPasswordValid = await this.passwordService.comparePassword(dto.currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException(
+        createApiErrorPayload(API_ERROR_CODES.INVALID_CURRENT_PASSWORD, 'Current password is incorrect', [
+          createFieldError('currentPassword', 'INVALID_CURRENT_PASSWORD', 'Current password is incorrect.'),
+        ]),
+      );
+    }
+
+    if (dto.newPassword !== dto.confirmNewPassword) {
+      throw new BadRequestException(
+        createApiErrorPayload(API_ERROR_CODES.VALIDATION_FAILED, 'Validation failed', [
+          createFieldError('confirmNewPassword', 'PASSWORD_MISMATCH', 'Confirmation does not match the new password.'),
+        ]),
+      );
+    }
+
+    if (dto.newPassword === dto.currentPassword) {
+      throw new BadRequestException(
+        createApiErrorPayload(API_ERROR_CODES.VALIDATION_FAILED, 'Validation failed', [
+          createFieldError(
+            'newPassword',
+            'PASSWORD_UNCHANGED',
+            'New password must be different from current password.',
+          ),
+        ]),
+      );
+    }
+
+    const passwordHash = await this.passwordService.hashPassword(dto.newPassword);
+    await this.userService.updatePassword(user.id, passwordHash);
   }
 }

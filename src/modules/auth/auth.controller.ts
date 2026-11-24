@@ -10,16 +10,17 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { ChangePasswordDto, LoginDto, RegisterDto } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import { ConfigService } from '@nestjs/config';
 import { Response, Request } from 'express';
 import { clearCookieOptions, getCookieOptions } from '@/common/utils/cookie';
 import { COOKIE_DEFAULTS, ENV_KEYS } from '@/common/utils/constants';
 import { Public } from '@/common/decorators/public.decorator';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @ApiTags('Authentication')
-@Controller('api/v1/auth')
+@Controller('/api/v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -48,7 +49,10 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Invalid credentials provided.' })
   @ApiForbiddenResponse({ description: 'User account is inactive.' })
   @ApiInternalServerErrorResponse({ description: 'An internal server error occurred.' })
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response): Promise<{ accessToken: string }> {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ accessToken: string; permissions: string[] }> {
     const { accessToken, refreshToken } = await this.authService.login(dto);
     const baseCookieOptions = getCookieOptions(this.configService);
     const refreshCookieName =
@@ -61,7 +65,21 @@ export class AuthController {
       maxAge: refreshMaxAge,
     });
 
-    return { accessToken };
+    return {
+      accessToken,
+      permissions: [
+        'view_all_orders',
+        'manage_orders',
+        'view_all_products',
+        'manage_products',
+        'view_all_inventory',
+        'manage_inventory',
+        'view_all_users',
+        'manage_users',
+        'manage_roles',
+        'access_admin',
+      ],
+    };
   }
 
   @Post('refresh')
@@ -74,7 +92,7 @@ export class AuthController {
   async refresh(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{ accessToken: string; permissions: string[] }> {
     const refreshCookieName =
       this.configService.get<string>(ENV_KEYS.JWT_REFRESH_COOKIE_NAME) || COOKIE_DEFAULTS.REFRESH_NAME;
     const cookies = (request.cookies ?? {}) as Record<string, string | undefined>;
@@ -95,13 +113,41 @@ export class AuthController {
         maxAge: refreshMaxAge,
       });
 
-      return { accessToken };
+      return {
+        accessToken,
+        permissions: [
+          'view_all_orders',
+          'manage_orders',
+          'view_all_products',
+          'manage_products',
+          'view_all_inventory',
+          'manage_inventory',
+          'view_all_users',
+          'manage_users',
+          'manage_roles',
+          'access_admin',
+        ],
+      };
     } catch {
       const clearOptions = clearCookieOptions(this.configService);
       response.clearCookie(refreshCookieName, clearOptions);
 
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change the current user password' })
+  @ApiOkResponse({ description: 'Password changed successfully.' })
+  @ApiBadRequestResponse({ description: 'Current password is incorrect or password confirmation does not match.' })
+  @ApiUnauthorizedResponse({ description: 'Authentication is required.' })
+  async changePassword(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.authService.changePassword(userId, dto);
+    return { message: 'Password changed successfully.' };
   }
 
   @Post('logout')
